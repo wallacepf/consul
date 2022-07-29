@@ -1,0 +1,8 @@
+*.tfstate*
+*.lock*
+.terraform
+.env
+iam-role/
+*.log
+*.auto.tfvars
+*.tfvars

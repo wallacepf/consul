@@ -1,0 +1,16 @@
+{
+    "Provider": "vault",
+    "Config": {
+       "Address": "https://vault-cluster3.private.vault.cc9ad890-345f-4dc4-a3d2-983024527cb3.aws.hashicorp.cloud:8200",
+       "Token": "Use the client token value from vault",
+       "RootPKIPath": "connect_root",
+       "IntermediatePKIPath": "connect_inter",
+       "LeafCertTTL": "720h",
+       "RotationPeriod": "2160h",
+       "IntermediateCertTTL": "8760h",
+       "PrivateKeyType": "ec",
+       "PrivateKeyBits": 256,
+       "Namespace": "admin"
+     },
+     "ForceWithoutCrossSigning": true
+}
