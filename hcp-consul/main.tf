@@ -6,22 +6,12 @@ terraform {
     }
   }
   required_providers {
-    consul = {
-      source  = "hashicorp/consul"
-      version = "~> 2.15.1"
-    }
-
     hcp = {
       source  = "hashicorp/hcp"
       version = "~> 0.34.0"
     }
 
   }
-}
-
-provider "consul" {
-  address = hcp_consul_cluster.main.consul_public_endpoint_url
-  token   = hcp_consul_cluster_root_token.token.secret_id
 }
 
 ######## LOCALS BLOCK
@@ -37,11 +27,6 @@ locals {
 data "tfe_outputs" "hcp_vault" {
   organization = "my-demo-account"
   workspace    = "hcp-vault"
-}
-
-data "tfe_outputs" "vault_configs" {
-  organization = "my-demo-account"
-  workspace    = "hcp-vault-configs"
 }
 
 ####### RESOURCE BLOCK
@@ -61,126 +46,4 @@ resource "hcp_consul_cluster" "main" {
 
 resource "hcp_consul_cluster_root_token" "token" {
   cluster_id = hcp_consul_cluster.main.id
-}
-
-resource "consul_certificate_authority" "connect" {
-  connect_provider = "vault"
-
-  config = {
-    Address             = data.tfe_outputs.hcp_vault.values.vault_private_addr
-    Token               = var.vault_token
-    RootPKIPath         = "connect_root"
-    IntermediatePKIPath = "connect_inter"
-    LeafCertTTL         = "1h"
-    RotationPeriod      = "144h"
-    IntermediateCertTTL = "288h"
-    PrivateKeyType      = "ec"
-    PrivateKeyBits      = 256
-    Namespace           = "admin"
-  }
-
-  depends_on = [
-    hcp_consul_cluster.main
-  ]
-}
-
-resource "consul_acl_auth_method" "vault" {
-  name          = "Vault"
-  type          = "oidc"
-  max_token_ttl = "5m"
-
-  config_json = jsonencode({
-    OIDCDiscoveryURL = "${data.tfe_outputs.hcp_vault.values.vault_private_addr}/v1/admin/identity/oidc/provider/vault-oidc",
-    OIDCClientID     = var.vault_oidc_client_id,
-    OIDCClientSecret = var.vault_oidc_client_secret,
-    BoundAudiences   = [var.vault_oidc_client_id],
-    AllowedRedirectURIs = [
-      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/oidc/callback",
-      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/ui/oidc/callback",
-      "http://127.0.0.1:8500/ui/oidc/callback"
-    ],
-    ClaimMappings = {
-      "http://consul.internal/email" : "email",
-      "http://consul.internal/phone_number" : "phone_number"
-    },
-    ListClaimMappings = {
-      "http://consul.internal/groups" : "groups"
-    }
-  })
-
-  depends_on = [
-    hcp_consul_cluster.main
-  ]
-}
-
-resource "consul_acl_auth_method" "okta" {
-  name          = "Okta"
-  type          = "oidc"
-  max_token_ttl = "5m"
-
-  config_json = jsonencode({
-    OIDCDiscoveryURL = "https://trial-7800845.okta.com/oauth2/aus1uwgf27Sz7OLEt697",
-    OIDCClientID     = var.okta_oidc_client_id,
-    OIDCClientSecret = var.okta_oidc_client_secret,
-    BoundAudiences   = [var.okta_oidc_client_id],
-    AllowedRedirectURIs = [
-      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/oidc/callback",
-      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/ui/oidc/callback",
-      "http://127.0.0.1:8500/ui/oidc/callback"
-    ],
-    ClaimMappings = {
-      "first_name" : "first_name",
-      "last_name" : "last_name"
-    },
-    ListClaimMappings = {
-      "groups" : "groups"
-    }
-  })
-
-  depends_on = [
-    hcp_consul_cluster.main
-  ]
-}
-
-resource "consul_acl_binding_rule" "okta_users" {
-  auth_method = consul_acl_auth_method.okta.name
-  selector    = "consulUsers in list.groups"
-  bind_type   = "role"
-  bind_name   = "dev-ro"
-}
-
-resource "consul_acl_auth_method" "auth0" {
-  name          = "Auth0"
-  type          = "oidc"
-  max_token_ttl = "5m"
-
-  config_json = jsonencode({
-    OIDCDiscoveryURL = "https://dev-c2lfpu1i.us.auth0.com/",
-    OIDCClientID     = var.auth0_oidc_client_id,
-    OIDCClientSecret = var.auth0_oidc_client_secret,
-    BoundAudiences   = [var.auth0_oidc_client_id],
-    AllowedRedirectURIs = [
-      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/oidc/callback",
-      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/ui/oidc/callback",
-      "http://127.0.0.1:8500/ui/oidc/callback"
-    ],
-    ClaimMappings = {
-      "http://consul.internal/first_name" : "first_name",
-      "http://consul.internal/last_name" : "last_name"
-    },
-    ListClaimMappings = {
-      "http://consul.internal/groups" : "groups"
-    }
-  })
-
-  depends_on = [
-    hcp_consul_cluster.main
-  ]
-}
-
-resource "consul_acl_binding_rule" "auth0_users" {
-  auth_method = consul_acl_auth_method.auth0.name
-  selector    = "users in list.groups"
-  bind_type   = "role"
-  bind_name   = "dev-ro"
 }
