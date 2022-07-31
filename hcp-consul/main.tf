@@ -85,15 +85,15 @@ resource "consul_certificate_authority" "connect" {
 }
 
 resource "consul_acl_auth_method" "vault" {
-  name = "auth_method"
-  type = "oidc"
+  name          = "Vault"
+  type          = "oidc"
   max_token_ttl = "5m"
 
   config_json = jsonencode({
     OIDCDiscoveryURL = "${data.tfe_outputs.hcp_vault.values.vault_private_addr}/v1/admin/identity/oidc/provider/vault-oidc",
-    OIDCClientID = var.oidc_client_id,
-    OIDCClientSecret = var.oidc_client_secret,
-    BoundAudiences = [var.oidc_client_id],
+    OIDCClientID     = var.vault_oidc_client_id,
+    OIDCClientSecret = var.vault_oidc_client_secret,
+    BoundAudiences   = [var.vault_oidc_client_id],
     AllowedRedirectURIs = [
       "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/oidc/callback",
       "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/ui/oidc/callback",
@@ -111,4 +111,76 @@ resource "consul_acl_auth_method" "vault" {
   depends_on = [
     hcp_consul_cluster.main
   ]
+}
+
+resource "consul_acl_auth_method" "okta" {
+  name          = "Okta"
+  type          = "oidc"
+  max_token_ttl = "5m"
+
+  config_json = jsonencode({
+    OIDCDiscoveryURL = "https://trial-7800845.okta.com/oauth2/aus1uwgf27Sz7OLEt697",
+    OIDCClientID     = var.okta_oidc_client_id,
+    OIDCClientSecret = var.okta_oidc_client_secret,
+    BoundAudiences   = [var.okta_oidc_client_id],
+    AllowedRedirectURIs = [
+      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/oidc/callback",
+      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/ui/oidc/callback",
+      "http://127.0.0.1:8500/ui/oidc/callback"
+    ],
+    ClaimMappings = {
+      "first_name" : "first_name",
+      "last_name" : "last_name"
+    },
+    ListClaimMappings = {
+      "groups" : "groups"
+    }
+  })
+
+  depends_on = [
+    hcp_consul_cluster.main
+  ]
+}
+
+resource "consul_acl_binding_rule" "okta_users" {
+  auth_method = consul_acl_auth_method.okta.name
+  selector    = "consulUsers in list.groups"
+  bind_type   = "role"
+  bind_name   = "dev-ro"
+}
+
+resource "consul_acl_auth_method" "auth0" {
+  name          = "Auth0"
+  type          = "oidc"
+  max_token_ttl = "5m"
+
+  config_json = jsonencode({
+    OIDCDiscoveryURL = "https://dev-c2lfpu1i.us.auth0.com/",
+    OIDCClientID     = var.auth0_oidc_client_id,
+    OIDCClientSecret = var.auth0_oidc_client_secret,
+    BoundAudiences   = [var.auth0_oidc_client_id],
+    AllowedRedirectURIs = [
+      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/oidc/callback",
+      "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud/ui/oidc/callback",
+      "http://127.0.0.1:8500/ui/oidc/callback"
+    ],
+    ClaimMappings = {
+      "http://consul.internal/first_name" : "first_name",
+      "http://consul.internal/last_name" : "last_name"
+    },
+    ListClaimMappings = {
+      "http://consul.internal/groups" : "groups"
+    }
+  })
+
+  depends_on = [
+    hcp_consul_cluster.main
+  ]
+}
+
+resource "consul_acl_binding_rule" "auth0_users" {
+  auth_method = consul_acl_auth_method.auth0.name
+  selector    = "users in list.groups"
+  bind_type   = "role"
+  bind_name   = "dev-ro"
 }

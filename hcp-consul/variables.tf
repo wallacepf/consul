@@ -1,7 +1,19 @@
 variable "vault_token" {}
-variable "oidc_client_id" {
-  
+
+variable "vault_oidc_client_id" {}
+
+variable "vault_oidc_client_secret" {
+  sensitive = true
 }
-variable "oidc_client_secret" {
-  
+
+variable "okta_oidc_client_id" {}
+
+variable "okta_oidc_client_secret" {
+  sensitive = true
+}
+
+variable "auth0_oidc_client_id" {}
+
+variable "auth0_oidc_client_secret" {
+  sensitive = true
 }
