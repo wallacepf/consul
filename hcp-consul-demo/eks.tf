@@ -128,9 +128,9 @@ module "eks_consul_client" {
   depends_on = [module.eks]
 }
 
-module "demo_app" {
-  source  = "hashicorp/hcp-consul/aws//modules/k8s-demo-app"
-  version = "~> 0.7.0"
+# module "demo_app" {
+#   source  = "hashicorp/hcp-consul/aws//modules/k8s-demo-app"
+#   version = "~> 0.7.0"
 
-  depends_on = [module.eks_consul_client]
-}
+#   depends_on = [module.eks_consul_client]
+# }

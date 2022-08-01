@@ -10,9 +10,9 @@
 #   value = abspath(module.eks.kubeconfig_filename)
 # }
 
-output "hashicups_url_eks" {
-  value = module.demo_app.hashicups_url
-}
+# output "hashicups_url_eks" {
+#   value = module.demo_app.hashicups_url
+# }
 
 # output "consul_token" {
 #   value     = data.kubernetes_secret.consul_token.data.token
@@ -30,3 +30,19 @@ output "nomad_url" {
 output "hashicups_url_ec2" {
   value = "http://${module.nlb.lb_dns_name}"
 }
+
+output "portainer_url" {
+  value = "http://${module.nlb-ec2.lb_dns_name}:9443"
+}
+
+# output "kubernetes_host" {
+#   value = data.aws_eks_cluster.cluster.endpoint
+# }
+
+# output "kubernetes_ca" {
+#   value = data.aws_eks_cluster.cluster.certificate_authority.0.data
+# }
+
+# output "kubernetes_token" {
+#   value = nonsensitive(data.aws_eks_cluster_auth.cluster.token)
+# }
