@@ -1,10 +1,10 @@
 provider "nomad" {
-  address = "http://nomad-host-elb-cbc250707154d28d.elb.us-east-1.amazonaws.com:8081"
+  address = "http://consul-pov13247324-nmd-elb-0198dea444aeae6e.elb.us-east-1.amazonaws.com:8081"
 }
 
 provider "consul" {
-  address = "https://consul-pov-7493445.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud"
-  token   = "fb71fe0d-219f-389d-e610-088ac4d3044d"
+  address = "https://consul-pov-11814103.consul.5bbc50e3-a284-4743-877e-ffd388d684f2.aws.hashicorp.cloud"
+  token   = "8cb075d5-c808-95bf-9f2c-83dd3aaa70b5"
 }
 
 resource "nomad_job" "app" {
@@ -32,7 +32,7 @@ variable "public_api_port" {
 
 variable "payment_api_port" {
   type        = number
-  default     = 8080
+  default     = 1800
 }
 
 variable "product_api_port" {
@@ -97,7 +97,7 @@ job "hashicups" {
               local_bind_port  = var.product_api_port
             }
             upstreams {
-              destination_name = "payment-api"
+              destination_name = "payment-docker"
               local_bind_port  = var.payment_api_port
             }
           }
@@ -116,7 +116,7 @@ job "hashicups" {
       env {
         BIND_ADDRESS = ":$${var.public_api_port}"
         PRODUCT_API_URI = "http://$${NOMAD_UPSTREAM_ADDR_product-api}"
-        PAYMENT_API_URI = "http://$${NOMAD_UPSTREAM_ADDR_payment-api}"
+        PAYMENT_API_URI = "http://$${NOMAD_UPSTREAM_ADDR_payment-docker}"
       }
     }
   }
@@ -243,47 +243,7 @@ EOT
   # ]
 }
 
-# resource "consul_config_entry" "intentions_frontend" {
-#   name = "frontend-ec2"
-#   kind = "service-intentions"
-
-#   config_json = jsonencode({
-#     Sources = [
-#       {
-#         Action     = "allow"
-#         Name       = "ingress-ec2-k8s"
-#         Precedence = 9
-#         Type       = "consul"
-#       }
-#     ]
-#   })
-
-#   depends_on = [
-#     nomad_job.app
-#   ]
-# }
-
-# resource "consul_config_entry" "intentions_public_api" {
-#   name = "public-api-ec2"
-#   kind = "service-intentions"
-
-#   config_json = jsonencode({
-#     Sources = [
-#       {
-#         Action     = "allow"
-#         Name       = "ingress-ec2-k8s"
-#         Precedence = 9
-#         Type       = "consul"
-#       }
-#     ]
-#   })
-
-#   depends_on = [
-#     nomad_job.app
-#   ]
-# }
-
-# resource "consul_config_entry" "intentions_payment_api" {
+# resource "consul_config_entry" "int_payment_api_ec2" {
 #   name = "payment-api-ec2"
 #   kind = "service-intentions"
 
@@ -303,7 +263,7 @@ EOT
 #   ]
 # }
 
-# resource "consul_config_entry" "intentions_product_api" {
+# resource "consul_config_entry" "int_product_api_ec2" {
 #   name = "product-api-ec2"
 #   kind = "service-intentions"
 
@@ -323,7 +283,7 @@ EOT
 #   ]
 # }
 
-# resource "consul_config_entry" "intentions_product_api_db" {
+# resource "consul_config_entry" "int_product_db_ec2" {
 #   name = "product-db-ec2"
 #   kind = "service-intentions"
 
@@ -343,20 +303,30 @@ EOT
 #   ]
 # }
 
-# resource "consul_config_entry" "fe-ec2" {
-#   kind = "service-defaults"
-#   name = "frontend"
+########## INTENTIONS EC2-EKS
+
+# resource "consul_config_entry" "int_product_api" {
+#   name = "product-api"
+#   kind = "service-intentions"
 
 #   config_json = jsonencode({
-#     Protocol : "tcp"
+#     Sources = [
+#       {
+#         Action     = "allow"
+#         Name       = "public-api-ec2"
+#         Precedence = 9
+#         Type       = "consul"
+#       },
+#       {
+#         Action     = "allow"
+#         Name       = "public-api"
+#         Precedence = 9
+#         Type       = "consul"
+#       }
+#     ]
 #   })
-# }
 
-# resource "consul_config_entry" "public_api" {
-#   kind = "service-defaults"
-#   name = "pub-api-ec2"
-
-#   config_json = jsonencode({
-#     Protocol : "tcp"
-#   })
+#   depends_on = [
+#     nomad_job.app
+#   ]
 # }
