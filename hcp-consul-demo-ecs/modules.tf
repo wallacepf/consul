@@ -16,50 +16,17 @@ module "acl_controller" {
   region                            = local.vpc_region
   subnets                           = data.tfe_outputs.consul_nw.values.vpc_private_subnets
   name_prefix                       = var.name
-    consul_ecs_image                  = var.consul_ecs_image
+consul_ecs_image                  = var.consul_ecs_image
+  consul_partitions_enabled         = true
 }
 
-resource "aws_iam_role" "client-task-role" {
-  name = "client_${var.name}_task_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role" "client-execution-role" {
-  name = "client_${var.name}_execution_role"
-  path = "/ecs/"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
 
 module "example_client_app" {
   source  = "hashicorp/consul-ecs/aws//modules/mesh-task"
   version = "~> 0.5.0"
 
   family         = "${var.name}-example-client-app"
-  task_role      = aws_iam_role.client-task-role
-  execution_role = aws_iam_role.client-execution-role
+
 
   port              = "9090"
   log_configuration = local.example_client_app_log_config
@@ -110,49 +77,16 @@ module "example_client_app" {
   depends_on = [module.acl_controller, module.example_server_app]
 }
 
-resource "aws_iam_role" "server-task-role" {
-  name = "server_${var.name}_task_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
 
-resource "aws_iam_role" "server-execution-role" {
-  name = "server_${var.name}_execution_role"
-  path = "/ecs/"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
 
 module "example_server_app" {
   source  = "hashicorp/consul-ecs/aws//modules/mesh-task"
   version = "~> 0.5.0"
 
   family            = "${var.name}-example-server-app"
-  task_role         = aws_iam_role.server-task-role
-  execution_role    = aws_iam_role.server-execution-role
   port              = "9090"
   log_configuration = local.example_server_app_log_config
+  
   container_definitions = [{
     name             = "example-server-app"
     image            = "ghcr.io/lkysow/fake-service:v0.21.0"
