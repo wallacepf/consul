@@ -31,3 +31,37 @@ resource "aws_lb_listener" "example_client_app" {
     target_group_arn = aws_lb_target_group.example_client_app.arn
   }
 }
+
+resource "aws_lb" "hashicups_frontend" {
+  name               = "${var.name}-hashicups-frontend"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.hashicups.id]
+  subnets            = data.tfe_outputs.consul_nw.values.vpc_public_subnets
+}
+
+resource "aws_lb_target_group" "hashicups_frontend" {
+  name                 = "${var.name}-hashicups-frontend"
+  port                 = 3000
+  protocol             = "HTTP"
+  vpc_id               = data.tfe_outputs.consul_nw.values.vpc_id
+  target_type          = "ip"
+  deregistration_delay = 10
+  health_check {
+    path                = "/"
+    healthy_threshold   = 2
+    unhealthy_threshold = 10
+    timeout             = 30
+    interval            = 60
+  }
+}
+
+resource "aws_lb_listener" "hashicups_frontend" {
+  load_balancer_arn = aws_lb.hashicups_frontend.arn
+  port              = "3000"
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.hashicups_frontend.arn
+  }
+}
