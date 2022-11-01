@@ -6,7 +6,8 @@ metadata:
   labels:
     app: nginx
 spec:
-  type: ClusterIP
+  # type: ClusterIP
+  type: LoadBalancer
   ports:
     - port: 80
       targetPort: 80
@@ -46,16 +47,16 @@ data:
         proxy_buffering off;
 
         location / {
-          proxy_pass http://127.0.0.1:3000;
+          proxy_pass http://frontend:3000;
         }
 
         location /static {
           proxy_cache_valid 60m;
-          proxy_pass http://127.0.0.1:3000;
+          proxy_pass http://frontend:3000;
         }
 
         location /api {
-          proxy_pass http://127.0.0.1:8080;
+          proxy_pass http://public-api:8080;
         }
 
         error_page   500 502 503 504  /50x.html;
@@ -70,13 +71,13 @@ kind: ServiceAccount
 metadata:
   name: nginx
 automountServiceAccountToken: true
----
-apiVersion: consul.hashicorp.com/v1alpha1
-kind: ServiceDefaults
-metadata:
-  name: nginx
-spec:
-  protocol: "http"
+# ---
+# apiVersion: consul.hashicorp.com/v1alpha1
+# kind: ServiceDefaults
+# metadata:
+#   name: nginx
+# spec:
+#   protocol: "http"
 ---
 apiVersion: apps/v1
 kind: Deployment

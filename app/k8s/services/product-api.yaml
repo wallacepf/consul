@@ -17,13 +17,13 @@ kind: ServiceAccount
 metadata:
   name: product-api
 automountServiceAccountToken: true
----
-apiVersion: consul.hashicorp.com/v1alpha1
-kind: ServiceDefaults
-metadata:
-  name: product-api
-spec:
-  protocol: "http"
+# ---
+# apiVersion: consul.hashicorp.com/v1alpha1
+# kind: ServiceDefaults
+# metadata:
+#   name: product-api
+# spec:
+#   protocol: "http"
 ---
 apiVersion: v1
 kind: ConfigMap

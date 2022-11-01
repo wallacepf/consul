@@ -12,13 +12,13 @@ spec:
       targetPort: 5432
   selector:
     app: product-api-db
----
-apiVersion: consul.hashicorp.com/v1alpha1
-kind: ServiceDefaults
-metadata:
-  name: product-api-db
-spec:
-  protocol: "tcp"
+# ---
+# apiVersion: consul.hashicorp.com/v1alpha1
+# kind: ServiceDefaults
+# metadata:
+#   name: product-api-db
+# spec:
+#   protocol: "tcp"
 ---
 apiVersion: v1
 kind: ServiceAccount
