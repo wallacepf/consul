@@ -1,0 +1,24 @@
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: ingress-gw
+spec:
+  # Name of the destination service affected by this ServiceIntentions entry
+  destination:
+    name: dashboard
+  # The set of traffic sources affected by this ServiceIntentions entry
+  sources:
+    - name: ingress-gateway
+      action: allow
+---
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: dashboard
+spec:
+  destination:
+    name: counting
+  sources:
+    - name: dashboard
+      action: allow

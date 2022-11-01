@@ -1,5 +1,5 @@
 global:
-  image: 'hashicorp/consul-enterprise:1.13.3-ent'
+  image: 'hashicorp/consul-enterprise:1.13.2-ent'
   enterpriseLicense:
     secretName: 'consul-license'
     secretKey: 'key'
@@ -83,3 +83,4 @@ ingressGateways:
 
 meshGateway:
   enabled: true
+  replicas: 1

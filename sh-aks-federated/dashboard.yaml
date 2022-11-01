@@ -41,4 +41,4 @@ spec:
         - containerPort: 9002
         env:
         - name: COUNTING_SERVICE_URL
-          value: 'http://127.0.0.1:9001'
+          value: 'http://localhost:9001'
