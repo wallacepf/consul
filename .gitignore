@@ -6,3 +6,4 @@ iam-role/
 *.log
 *.auto.tfvars
 *.tfvars
+.DS_Store
