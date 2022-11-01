@@ -95,7 +95,7 @@ resource "random_id" "id" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.14.2"
+  version = "3.14.4"
 
   name                 = "${random_id.id.dec}-vpc"
   cidr                 = "10.0.0.0/16"
@@ -109,10 +109,11 @@ module "vpc" {
 
 module "aws_hcp_consul" {
   source  = "hashicorp/hcp-consul/aws"
-  version = "~> 0.7.0"
+  version = "0.7.3"
 
   hvn             = data.tfe_outputs.hcp_vault.values.hvn
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.private_subnets
   route_table_ids = module.vpc.private_route_table_ids
+  # security_group_ids = [module.vpc.default_security_group_id]
 }
