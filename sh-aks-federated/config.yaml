@@ -1,0 +1,65 @@
+global:
+  image: 'hashicorp/consul-enterprise:1.13.3-ent'
+  enterpriseLicense:
+    secretName: 'consul-license'
+    secretKey: 'key'
+  name: consul
+  datacenter: dc1-k8s
+  enableConsulNamespaces: true
+  # enablePodSecurityPolicies: true
+  acls:
+    manageSystemACLs: true
+    createReplicationToken: true
+  gossipEncryption:
+    autoGenerate: true
+  # adminPartitions:
+  #   enabled: true
+  #   name: "default"
+  federation:
+    enabled: true
+    createFederationSecret: true
+
+  tls:
+    enabled: true
+    enableAutoEncrypt: true
+
+server:
+  replicas: 3
+
+client:
+  enabled: true
+  grpc: true
+
+ui:
+  enabled: true
+  service:
+    type: 'LoadBalancer'
+
+syncCatalog:
+  enabled: true
+  toConsul: true
+  toK8S: false
+  default: false
+  consulNamespaces:
+    mirroringK8s: true
+
+connectInject:
+  transparentProxy:
+    defaultEnabled: true
+  enabled: true
+  default: false
+  # cni:
+  #   enabled: true
+
+controller:
+  enabled: true
+
+ingressGateways:
+  enabled: true
+  gateways:
+    - name: ingress-gateway
+      service:
+        type: LoadBalancer
+
+meshGateway:
+  enabled: true
