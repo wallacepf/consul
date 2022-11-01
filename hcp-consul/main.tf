@@ -8,7 +8,7 @@ terraform {
   required_providers {
     hcp = {
       source  = "hashicorp/hcp"
-      version = "~> 0.34.0"
+      version = "~> 0.44.0"
     }
 
   }
@@ -39,9 +39,9 @@ resource "hcp_consul_cluster" "main" {
   cluster_id         = local.cluster_id
   hvn_id             = data.tfe_outputs.hcp_vault.values.hvn_id
   public_endpoint    = true
-  tier               = "standard"
-  size               = "small"
-  min_consul_version = "1.12.3"
+  tier               = "development"
+  size               = "x_small"
+  min_consul_version = "1.13.1"
 }
 
 resource "hcp_consul_cluster_root_token" "token" {
