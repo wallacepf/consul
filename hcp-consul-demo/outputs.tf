@@ -31,9 +31,9 @@ output "hashicups_url_ec2" {
   value = "http://${module.nlb.lb_dns_name}"
 }
 
-output "portainer_url" {
-  value = "http://${module.nlb-ec2.lb_dns_name}:9443"
-}
+# output "portainer_url" {
+#   value = "http://${module.nlb-ec2.lb_dns_name}:9443"
+# }
 
 # output "kubernetes_host" {
 #   value = data.aws_eks_cluster.cluster.endpoint
